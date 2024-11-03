@@ -1,0 +1,279 @@
+%mdf	"sub_macro_wv_analysis"	"sub_macro_wv_analysis.f"	[000c]	[0014]	20000	"G_1"	"(af77 4.0)"	
+[000c]	con	i	20000
+[0014]	con	i	0
+[001f]	typ	@S	(x(0) : f, y(4) : f ) _cmplx
+[0027]	typ	@S	(x(0) : d, y(8) : d ) _dcmplx
+%bgn	sub_macro_wv_analysis	2
+[0044]	con	L	1
+[27287]	typ	@A	([0044]..[27181])	S
+[2728f]	typ	@A	([0044]..[27181])	f
+[27297]	typ	@A	([0044]..[27181])	f
+[2729f]	typ	@A	([0044]..[27181])	f
+[272a7]	typ	@A	([0044]..[27181])	f
+[272af]	typ	@A	([0044]..[27181])	S
+[272b7]	typ	@A	([0044]..[27191])	f
+[272bf]	typ	@A	([0044]..[271a1])	f
+[272c7]	typ	@A	([0044]..[271e1])	f
+[272cf]	typ	@A	([0044]..[271f1])	f
+[272d7]	typ	@A	([0044]..[27201])	f
+[272df]	typ	@A	([0044]..[27211])	f
+[272e7]	typ	@A	([0044]..[27221])	f
+[27131]	sym	^LX	<[27231],0>	inner_pix
+[27139]	sym	^[27287]X	<[27239],0>	adc
+[27141]	sym	^fX	<[27241],0>	pixel_size
+[27149]	sym	^[2728f]X	<[27249],0>	ped
+[27151]	sym	^[27297]X	<[27251],0>	ped_disp
+[27159]	sym	^[2729f]X	<[27259],0>	x
+[27161]	sym	^[272a7]X	<[27261],0>	y
+[27169]	sym	^LX	<[27269],0>	iflag
+[27171]	sym	^[272af]X	<[27271],0>	adc_sel
+[27179]	sym	^LX	<[27279],0>	ind_noise_sim
+[27181]	sym	L	<10,0>	
+[27189]	sym	[272b7]	<,0>	data_adc
+[27191]	sym	L	<10,0>	
+[27199]	sym	[272bf]	<,0>	data_sel
+[271a1]	sym	L	<10,0>	
+[271a9]	sym	L	<10,0>	i
+[271b1]	sym	f	<10,0>	mhw_arcmin_mh1
+[271b9]	sym	f	<10,0>	mhw_arcmin_mh2
+[271c1]	sym	f	<10,0>	mhw_arcmin_mh3
+[271c9]	sym	f	<10,0>	mhw_arcmin_mh4
+[271d1]	sym	f	<10,0>	mhw_arcmin_mh5
+[271d9]	sym	[272c7]	<,0>	wv_adc_mh1
+[271e1]	sym	L	<10,0>	
+[271e9]	sym	[272cf]	<,0>	wv_adc_mh2
+[271f1]	sym	L	<10,0>	
+[271f9]	sym	[272d7]	<,0>	wv_adc_mh3
+[27201]	sym	L	<10,0>	
+[27209]	sym	[272df]	<,0>	wv_adc_mh4
+[27211]	sym	L	<10,0>	
+[27219]	sym	[272e7]	<,0>	wv_adc_mh5
+[27221]	sym	L	<10,0>	
+[27229]	sym	L	<10,0>	
+[27231]	sym	a	<6,1>	
+[27239]	sym	a	<6,2>	
+[27241]	sym	a	<6,3>	
+[27249]	sym	a	<6,4>	
+[27251]	sym	a	<6,5>	
+[27259]	sym	a	<6,6>	
+[27261]	sym	a	<6,7>	
+[27269]	sym	a	<6,8>	
+[27271]	sym	a	<6,9>	
+[27279]	sym	a	<6,10>	
+[004c]	con	L	8
+_sub_macro_wv_analysis:
+[272ed]	ent	v	[004c]	([27231],[27239],[27241],[27249],[27251],[27259],[27261],[27269],[27271],[27279])	# sub_macro_wv_analysis
+[27455]	lin	22	"sub_macro_wv_analysis.f"
+[2745d]	lod	a	[27231]
+[272f5]	lod	L	[2745d]	# inner_pix
+[27305]	sto	L	[272f5]	[27181]
+_22	smt	[27305]
+
+[27465]	lin	23	"sub_macro_wv_analysis.f"
+[2746d]	lod	a	[27231]
+[27315]	lod	L	[2746d]	# inner_pix
+[27325]	sto	L	[27315]	[27191]
+_23	smt	[27325]
+
+[27475]	lin	29	"sub_macro_wv_analysis.f"
+[2747d]	lod	a	[27231]
+[27335]	lod	L	[2747d]	# inner_pix
+[27345]	sto	L	[27335]	[271a1]
+_29	smt	[27345]
+
+[27485]	lin	37	"sub_macro_wv_analysis.f"
+[2748d]	lod	a	[27231]
+[27355]	lod	L	[2748d]	# inner_pix
+[27365]	sto	L	[27355]	[271e1]
+_37	smt	[27365]
+
+[27495]	lin	38	"sub_macro_wv_analysis.f"
+[2749d]	lod	a	[27231]
+[27375]	lod	L	[2749d]	# inner_pix
+[27385]	sto	L	[27375]	[271f1]
+_38	smt	[27385]
+
+[274a5]	lin	39	"sub_macro_wv_analysis.f"
+[274ad]	lod	a	[27231]
+[27395]	lod	L	[274ad]	# inner_pix
+[273a5]	sto	L	[27395]	[27201]
+_39	smt	[273a5]
+
+[274b5]	lin	40	"sub_macro_wv_analysis.f"
+[274bd]	lod	a	[27231]
+[273b5]	lod	L	[274bd]	# inner_pix
+[273c5]	sto	L	[273b5]	[27211]
+_40	smt	[273c5]
+
+[274c5]	lin	41	"sub_macro_wv_analysis.f"
+[274cd]	lod	a	[27231]
+[273d5]	lod	L	[274cd]	# inner_pix
+[273e5]	sto	L	[273d5]	[27221]
+_41	smt	[273e5]
+
+[274d5]	lin	46	"sub_macro_wv_analysis.f"
+[273f5]	lod	L	[0044]
+[27405]	sto	L	[273f5]	[271a9]
+_46	smt	[27405]
+
+[274dd]	lod	a	[27231]
+[27415]	lod	L	[274dd]	# inner_pix
+[27425]	sto	L	[27415]	[27229]
+_46	smt	[27425]
+
+[27435]	lod	L	[27229]	#  I00000008
+[0054]	con	L	0
+[2743d]	lod	L	[0054]
+[27445]	leq	l	[27435]	[2743d]
+[274e5]	tjp	[27445]	[27116]
+_46	smt	[274e5]
+
+[27106]	lbl	$FL20000
+_46	smt	[27105]
+
+[275c5]	lin	47	"sub_macro_wv_analysis.f"
+[274fd]	lod	L	[271a9]	# i
+[27505]	lod	L	[271a9]	# i
+[2750d]	add	L	[274fd]	[27505]
+[275cd]	lod	a	[27239]
+[275d5]	inx	[275cd]	[2750d]	1
+[275dd]	fld	S	<[27287],-2>
+[274f5]	lod	S	[275d5]	[275dd]	# adc
+[274ed]	cvt	f	S	[274f5]
+[27525]	lod	L	[271a9]	# i
+[005c]	con	L	2
+[2752d]	lod	L	[005c]
+[2751d]	lsh	L	[27525]	[2752d]
+[275e5]	inx	[27189]	[2751d]	1
+[275ed]	fld	f	<[272b7],-4>
+[27535]	sto	f	[274ed]	[275e5]	[275ed]
+_47	smt	[27535]
+
+[27545]	lod	L	[271a9]	# i
+[2754d]	lod	L	[0044]
+[27555]	add	L	[27545]	[2754d]
+[27565]	sto	L	[27555]	[271a9]
+_47	smt	[27565]
+
+[27575]	lod	L	[27229]	#  I00000008
+[0064]	con	L	-1
+[2757d]	lod	L	[0064]
+[27585]	add	L	[27575]	[2757d]
+[27595]	sto	L	[27585]	[27229]
+_47	smt	[27595]
+
+[275f5]	lin	48	"sub_macro_wv_analysis.f"
+[275a5]	lod	L	[27229]	#  I00000008
+[275ad]	lod	L	[0054]
+[275b5]	grt	l	[275a5]	[275ad]
+[275fd]	tjp	[275b5]	[27106]
+_48	smt	[275fd]
+
+[27116]	lbl	$FL20002
+_48	smt	[27115]
+
+[2766d]	lin	52	"sub_macro_wv_analysis.f"
+[27675]	lod	a	[27241]
+[27605]	lod	f	[27675]	# pixel_size
+[27615]	sto	f	[27605]	[271b1]
+_52	smt	[27615]
+
+[2767d]	lin	53	"sub_macro_wv_analysis.f"
+[2762d]	lod	a	[27231]
+[27635]	lda	[27189]	# data_adc
+[2763d]	lod	a	[27259]
+[27645]	lod	a	[27261]
+[2764d]	lod	a	[27241]
+[27655]	lda	[271b1]	# mhw_arcmin_mh1
+[2765d]	lda	[271d9]	# wv_adc_mh1
+[27625]	cal	v	[0031]	([2762d],[27635],[2763d],[27645],[2764d],[27655],[2765d])	# sub_conv_mexhat_arr
+_53	smt	[27625]
+
+[276fd]	lin	56	"sub_macro_wv_analysis.f"
+[27705]	lod	a	[27241]
+[27685]	lod	f	[27705]	# pixel_size
+[2770d]	lod	a	[27241]
+[2768d]	lod	f	[2770d]	# pixel_size
+[27695]	add	f	[27685]	[2768d]
+[276a5]	sto	f	[27695]	[271b9]
+_56	smt	[276a5]
+
+[27715]	lin	57	"sub_macro_wv_analysis.f"
+[276bd]	lod	a	[27231]
+[276c5]	lda	[27189]	# data_adc
+[276cd]	lod	a	[27259]
+[276d5]	lod	a	[27261]
+[276dd]	lod	a	[27241]
+[276e5]	lda	[271b9]	# mhw_arcmin_mh2
+[276ed]	lda	[271e9]	# wv_adc_mh2
+[276b5]	cal	v	[0031]	([276bd],[276c5],[276cd],[276d5],[276dd],[276e5],[276ed])	# sub_conv_mexhat_arr
+_57	smt	[276b5]
+
+[27795]	lin	60	"sub_macro_wv_analysis.f"
+[006c]	con	f	+3.00000000000000000000e+0
+[2771d]	lod	f	[006c]
+[2779d]	lod	a	[27241]
+[27725]	lod	f	[2779d]	# pixel_size
+[2772d]	mul	f	[2771d]	[27725]
+[2773d]	sto	f	[2772d]	[271c1]
+_60	smt	[2773d]
+
+[277a5]	lin	61	"sub_macro_wv_analysis.f"
+[27755]	lod	a	[27231]
+[2775d]	lda	[27189]	# data_adc
+[27765]	lod	a	[27259]
+[2776d]	lod	a	[27261]
+[27775]	lod	a	[27241]
+[2777d]	lda	[271c1]	# mhw_arcmin_mh3
+[27785]	lda	[271f9]	# wv_adc_mh3
+[2774d]	cal	v	[0031]	([27755],[2775d],[27765],[2776d],[27775],[2777d],[27785])	# sub_conv_mexhat_arr
+_61	smt	[2774d]
+
+[27825]	lin	64	"sub_macro_wv_analysis.f"
+[0074]	con	f	+4.00000000000000000000e+0
+[277ad]	lod	f	[0074]
+[2782d]	lod	a	[27241]
+[277b5]	lod	f	[2782d]	# pixel_size
+[277bd]	mul	f	[277ad]	[277b5]
+[277cd]	sto	f	[277bd]	[271c9]
+_64	smt	[277cd]
+
+[27835]	lin	65	"sub_macro_wv_analysis.f"
+[277e5]	lod	a	[27231]
+[277ed]	lda	[27189]	# data_adc
+[277f5]	lod	a	[27259]
+[277fd]	lod	a	[27261]
+[27805]	lod	a	[27241]
+[2780d]	lda	[271c9]	# mhw_arcmin_mh4
+[27815]	lda	[27209]	# wv_adc_mh4
+[277dd]	cal	v	[0031]	([277e5],[277ed],[277f5],[277fd],[27805],[2780d],[27815])	# sub_conv_mexhat_arr
+_65	smt	[277dd]
+
+[278b5]	lin	68	"sub_macro_wv_analysis.f"
+[007c]	con	f	+5.00000000000000000000e+0
+[2783d]	lod	f	[007c]
+[278bd]	lod	a	[27241]
+[27845]	lod	f	[278bd]	# pixel_size
+[2784d]	mul	f	[2783d]	[27845]
+[2785d]	sto	f	[2784d]	[271d1]
+_68	smt	[2785d]
+
+[278c5]	lin	69	"sub_macro_wv_analysis.f"
+[27875]	lod	a	[27231]
+[2787d]	lda	[27189]	# data_adc
+[27885]	lod	a	[27259]
+[2788d]	lod	a	[27261]
+[27895]	lod	a	[27241]
+[2789d]	lda	[271d1]	# mhw_arcmin_mh5
+[278a5]	lda	[27219]	# wv_adc_mh5
+[2786d]	cal	v	[0031]	([27875],[2787d],[27885],[2788d],[27895],[2789d],[278a5])	# sub_conv_mexhat_arr
+_69	smt	[2786d]
+
+[2794d]	lin	74	"sub_macro_wv_analysis.f"
+[278d5]	lod	a	[27231]
+[278dd]	lod	a	[27241]
+[278e5]	lod	a	[27239]
+[278ed]	lda	[271d9]	# wv_adc_mh1
+[278f5]	lda	[271e9]	# wv_adc_mh2
+[278fd]	lda	[271f9]	# wv_adc_mh3
+[27905]	lda	[27209]	# wv_

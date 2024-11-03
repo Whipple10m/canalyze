@@ -1,0 +1,564 @@
+#!/bin/bash
+# CANALYZE
+# R.W. Lessard 960226
+#
+# get files from DATAPATH and uncompress as necessary
+#
+function getfile (){
+  unset found
+  IFS=:
+  for path in $PATHTODATA ; do
+# in path and uncompressed
+    if test -f $path/$1 ; then
+      echo "found $1 in $path" >&2
+      if test $path != '.' ; then
+	echo "copying $path/$1" >&2
+	echo "cp $path/$1 ." | `echo $whereto`
+      fi
+      found=1
+      break
+# in path and compressed
+    elif test -f $path/$1.Z ; then
+      echo "found $1.Z in $path" >&2
+      if test $path != '.' ; then
+	echo "copying $path/$1.Z" >&2
+	echo "cp $path/$1.Z ." | `echo $whereto`
+      fi
+      echo "uncompressing $1.Z" >&2
+      echo "uncompress -v -c $1.Z > $1" | `echo $whereto`
+      found=1
+      break
+    elif test -f $path/$1.gz ; then
+      echo "found $1.gz in $path" >&2
+      if test $path != '.' ; then
+	echo "copying $path/$1.gz" >&2
+	echo "cp $path/$1.gz ." | `echo $whereto`
+      fi
+      echo "uncompressing $1.gz" >&2
+      echo "gunzip -v -c $1.gz > $1" | `echo $whereto`
+      found=1
+      break
+    elif test -f $path/$1.bz2 ; then
+      echo "found $1.bz2 in $path" >&2
+      if test $path != '.' ; then
+	echo "copying $path/$1.bz2" >&2
+	echo "cp $path/$1.bz2 ." | `echo $whereto`
+      fi
+      echo "uncompressing $1.bz2" >&2
+      echo "bzip2 -d -v -c $1.bz2 > $1" | `echo $whereto`
+      found=1
+      break
+# in path and DOS format compressed
+    elif test -f $path/$1z ; then
+      echo "found $1z in $path" >&2
+      if test $path != '.' ; then
+	echo "copying $path/$1z" >&2
+	echo "cp $path/$1z ." | `echo $whereto`
+      fi
+      echo "renaming to $1.Z" >&2
+      echo "mv $1z $1.Z" | `echo $whereto`
+      echo "uncompressing $1.Z" >&2
+      echo "uncompress -v -c $1.Z > $1" | `echo $whereto`
+      found=1
+      break
+# in path plus date and uncompressed
+    elif test -f $path/d$date/$1 ; then
+      echo "found $1 in $path/d$date" >&2
+      if test $path != '.' ; then
+	echo "copying $path/d$date/$1" >&2
+	echo "cp $path/d$date/$1 ." | `echo $whereto`
+      fi
+      found=1
+      break
+# in path plus date and compressed
+    elif test -f $path/d$date/$1.Z ; then
+      echo "found $1.Z in $path/d$date" >&2
+      if test $path != '.' ; then
+	echo "copying $path/d$date/$1.Z" >&2
+	echo "cp $path/d$date/$1.Z ." | `echo $whereto`
+      fi
+      echo "uncompressing $1.Z" >&2
+      echo "uncompress -v -c $1.Z > $1" | `echo $whereto`
+      found=1
+      break
+    elif test -f $path/d$date/$1.gz ; then
+      echo "found $1.gz in $path/d$date" >&2
+      if test $path != '.' ; then
+	echo "copying $path/d$date/$1.gz" >&2
+	echo "cp $path/d$date/$1.gz ." | `echo $whereto`
+      fi
+      echo "uncompressing $1.gz" >&2
+      echo "gunzip -v -c $1.gz > $1" | `echo $whereto`
+      found=1
+      break
+    elif test -f $path/d$date/$1.bz2 ; then
+      echo "found $1.bz2 in $path/d$date" >&2
+      if test $path != '.' ; then
+	echo "copying $path/d$date/$1.bz2" >&2
+	echo "cp $path/d$date/$1.bz2 ." | `echo $whereto`
+      fi
+      echo "uncompressing $1.bz2" >&2
+      echo "bzip2 -d -v -c $1.bz2 > $1" | `echo $whereto`
+      found=1
+      break
+# in path plus date and DOS format compressed
+    elif test -f $path/d$date/$1z ; then
+      echo "found $1z in $path/d$date" >&2
+      if test $path != '.' ; then
+	echo "copying $path/d$date/$1z" >&2
+	echo "cp $path/d$date/$1z ." | `echo $whereto`
+      fi
+      echo "renaming to $1.Z" >&2
+      echo "mv $1z $1.Z" | `echo $whereto`
+      echo "uncompressing $1.Z" >&2
+      echo "uncompress -v -c $1.Z > $1" | `echo $whereto`
+      found=1
+      break
+    fi
+  done
+  IFS=" "
+}
+#
+# MAIN
+#
+# Defines
+#
+. canalyze.config
+if test $DATAPATH ; then
+  PATHTODATA=$DEFAULTDATAPATH:$DATAPATH
+else
+  PATHTODATA=$DEFAULTDATAPATH
+fi
+whereto="sh"
+#
+# get command line options
+#
+set -- `/usr/bin/getopt dg:hns $*`
+while [ $1 != -- ]
+do
+  case $1 in
+    -d) delete=1 ;;
+    -g) DBPATH=$2
+	shift ;;
+    -h) echo "usage: $0 [options] list" >&2
+	echo "       [options]" >&2
+	echo "       -d delete fz files" >&2
+        echo "       -g path path to database files [$DBPATH]" >&2
+	echo "       -h help" >&2
+        echo "       -n no compressing" >&2
+	echo "       -s output command script instead of executing" >&2
+	exit 1;;
+    -n) nocompress=1 ;;
+    -s) whereto="cat" ;;
+  esac
+  shift
+done
+shift
+#
+# make copy of empty files
+#
+cp /dev/null files
+cp /dev/null files.trk
+#
+# read files list
+#
+while read mode on off n2id date ; do
+#
+#  check the mode status
+#  
+  if test ! $mode ; then
+    continue
+  elif test `echo "$mode" | cut -c1` = "#"; then
+     continue
+  elif test $mode = 'pr' ; then
+    if test $mode && test $on && test $off && test $n2id && test $date ; then
+      year=`echo $date | cut -c1-2`
+      echo "processing $on $off $date" >&2
+    else
+      echo "**error** reading file list" >&2
+      continue
+    fi
+  elif test $mode = 'tr' ; then
+    if test $mode && test $on && test $off && test $n2id && test $date ; then
+      year=`echo $date | cut -c1-2`
+      echo "processing $on $date" >&2
+    else
+      echo "**error** reading file list" >&2
+      continue
+    fi
+  elif test $mode = 'camera' ; then
+    echo "setting options for $on camera" >&2
+    if test $on = '109' ; then
+       mcut_opt="-u 999999.9 -w 0.073,0.15 -l 0.16,0.30 -d 0.51,1.10 -a 15.0 -y -999999.0 -z 400,999999 -t 100,80,0"
+       cparam_opt="$cparam_opt -t 91 -e 1.78"
+    elif test $on = '151' ; then
+       mcut_opt="-u 999999.9 -w 0.073,0.16 -l 0.16,0.33 -d 0.51,1.17 -a 15.0 -y -999999.0 -z 0,999999 -t 95,45,0"
+       cparam_opt="$cparam_opt -t 91 -e 1.78"
+    elif test $on = '331' ; then
+       mcut_opt="-u 999999.9 -w 0.073,0.16 -l 0.16,0.43 -d 0.51,1.25 -a 10.0 -y 0.0 -z 0,999999 -t 78,56,0"
+       cparam_opt="$cparam_opt -t 331 -e 1.65"
+    elif test $on = 'lowel' ; then
+       mcut_opt="-u 999999.9 -z 300,999999 -t 45,45,0 -d 0.51,1.1 -w 0.05,0.12 -l 0.14,0.25 -a 15.0 -y -999999.0"
+    else
+       echo "**warning** camera option $on not found" >&2
+    fi
+    continue
+  elif test $mode = 'nproc' ; then
+    nproc_opt="-np $on"
+    echo "using $on processor[s]" >&2
+    continue
+  elif test $mode = 'source' ; then
+    cparam_opt="$cparam_opt -s $on"
+    echo "source is $on" >&2
+    continue
+  elif test $mode = 'pulsar' ; then
+    pulsar=$on
+    echo "pulsar is $pulsar" >&2
+    continue
+  elif test $mode = 'binary' ; then
+    binary=$on
+    echo "binary is $binary" >&2
+    continue
+  elif test $mode = 'offon' ; then
+    echo "off/on mode" >&2
+    offon=1
+#
+# if we've already set the on position then we have to redo the off position
+#
+    if test $onra ; then
+      if test $onramins -gt 30 ; then
+        offrahours=$((onrahours))
+        offramins=$((onramins-30))
+      else
+        offrahours=$((onrahours-1))
+        offramins=$((onramins+30))
+      fi
+      offra=$((offrahours*10000+offramins*100+onrasecs))
+      offdec=$ondec
+      echo "on  source position: $onra $ondec" >&2
+      echo "off source position: $offra $offdec" >&2
+    fi
+    continue
+  elif test $mode = 'onoff' ; then
+    echo "on/off mode" >&2
+    unset offon
+#
+# if we've already set the on position then we have to redo the off position
+#
+    if test $onra ; then
+      if test $onramins -lt 30 ; then
+        offrahours=$((onrahours))
+        offramins=$((onramins+30))
+      else
+        offrahours=$((onrahours+1))
+        offramins=$((onramins-30))
+      fi
+      offra=$((offrahours*10000+offramins*100+onrasecs))
+      offdec=$ondec
+      echo "on  source position: $onra $ondec" >&2
+      echo "off source position: $offra $offdec" >&2
+    fi
+    continue
+  elif test $mode = 'position' ; then
+    onra=$on
+    onrahours=$((onra/10000))
+    onramins=$(((onra-onrahours*10000)/100))
+    onrasecs=$((onra-onrahours*10000-onramins*100))
+    ondec=$off
+#
+# we may have already said it was offon or onoff
+#
+    if test $offon ; then
+      if test $onramins -gt 30 ; then
+	offrahours=$((onrahours))
+	offramins=$((onramins-30))
+      else
+	offrahours=$((onrahours-1))
+	offramins=$((onramins+30))
+      fi
+    else
+      if test $onramins -lt 30 ; then
+	offrahours=$((onrahours))
+	offramins=$((onramins+30))
+      else
+	offrahours=$((onrahours+1))
+	offramins=$((onramins-30))
+      fi
+    fi
+    offra=$((offrahours*10000+offramins*100+onrasecs))
+    offdec=$ondec
+    echo "on  source position: $onra $ondec" >&2
+    echo "off source position: $offra $offdec" >&2
+    continue
+  elif test $mode = 'option' ; then
+     if test $on = 'mcut' ; then
+        mcut_opt="$off $n2id $date"
+     elif test $on = 'cparam' ; then
+        cparam_opt="$cparam_opt $off $n2id $date"
+     elif test $on = 'fz2hdf' ; then
+        fz2hdf_opt="$off $n2id $date"
+     elif test $on = 'cpeds' ; then
+        cpeds_opt="$off $n2id $date"
+     else
+        echo "**error** invalid option parameter" >&2
+     fi
+     continue
+  else
+    echo "**error** invalid mode" >&2
+    continue
+  fi
+#
+#   see what needs to be done
+#   assume everything needs to be done
+#
+  cuton=1 ; cutoff=1 ; paron=1 ; paroff=1 ; reduceon=1 ; reduceoff=1
+  ok=1 ; nothingtodo=1
+  if test -f $on.mat ; then
+    unset cuton ; unset paron ; unset reduceon
+  fi
+  if test $cuton ; then
+    if test -f "$on"p.hdf ; then
+      unset paron ; unset reduceon
+    fi
+  fi
+  if test $paron ; then
+    getfile $on.hdf
+    if test $found ; then
+      unset reduceon
+    else
+      getfile $on.fz
+      if ! test $found ; then
+	echo "can't find data for $on" >&2
+	unset ok
+      fi
+    fi
+  fi
+  if test $mode = 'pr' ; then
+    if test -f $off.mat ; then
+      unset cutoff ; unset paroff
+    fi
+    if test $cutoff ; then
+      if test -f "$off"p.hdf ; then
+	unset paroff ; unset reduceoff
+      fi
+    fi
+    if test $paroff ; then
+      getfile $off.hdf
+      if test $found ; then
+	unset reduceoff
+      else
+	getfile $off.fz
+	if ! test $found ; then
+	  echo "can't find data for $off" >&2
+	  unset ok
+	fi
+      fi
+    fi
+  else
+    unset reduceoff ; unset paroff ; unset cutoff
+  fi
+#
+# do what needs to be done
+#
+#
+# reduce
+#
+  if test $reduceon ; then
+    echo "reducing zebra to HDF" >&2
+    echo "$BINPATH/fz2hdf $fz2hdf_opt $on.fz" | `echo $whereto`
+    if test $delete ; then
+      echo "/bin/rm -f $on.fz*" | `echo $whereto`
+    elif test -f $on.fz.gz || test -f $on.fz.Z || test -f $on.fz.bz2 ; then
+      echo "/bin/rm -f $on.fz" | `echo $whereto`
+    else
+      echo "compressing $on.fz" >&2
+      echo "gzip --fast -v $on.fz" | `echo $whereto`
+    fi
+  fi
+#
+# pedestals & gains
+#
+  if test $paron ; then 
+#
+# look for gains
+#
+    if grep -q -s $n2id $DBPATH/hrc$year.cn2gains ; then
+      echo "found gains for $n2id" >&2
+    else
+#
+# get gain file 
+#
+      getfile $n2id.hdf
+      if ! test $found ; then
+	getfile $n2id.fz
+	if ! test $found ; then
+	  echo "can't find data for $n2id" >&2
+	  unset ok
+	else
+	  echo "reducing zebra to HDF" >&2
+	  echo "$BINPATH/fz2hdf -o 1.0 $fz2hdf_opt $n2id.fz" | `echo $whereto`
+	  if test $delete ; then
+	    echo "/bin/rm -f $n2id.fz*" | `echo $whereto`
+	  elif test -f $n2id.fz.gz || test -f $n2id.fz.Z || test -f $n2id.fz.bz2 ; then
+	    echo "/bin/rm -f $n2id.fz" | `echo $whereto`
+	  else
+	    echo "compressing $n2id.fz" >&2
+	    echo "gzip --fast -v $n2id.fz" | `echo $whereto`
+	  fi
+	fi
+      fi
+#
+# pedestals for gain file
+#
+      if grep -q -s $n2id $DBPATH/hrc$year.cpeds ; then
+	echo "found pedestals for $n2id" >&2
+      else
+	echo "calculating peds" >&2
+	echo "$MPICOMM $BINPATH/cpeds -g $DBPATH/ $cpeds_opt $n2id.hdf" | `echo $whereto`
+      fi
+# 
+# calc gains
+#
+      echo "calculating gains" >&2
+      echo "$BINPATH/cn2gains -g $DBPATH/ $n2id.hdf" | `echo $whereto`
+      if test -f $n2id.hdf.gz || test -f $n2id.hdf.Z ; then
+	echo "/bin/rm -f $n2id.hdf" | `echo $whereto`
+      elif test $nocompress ; then
+        echo "leaving $n2id.hdf uncompressed" >&2
+      else
+         echo "compressing $n2id.hdf" >&2
+         echo "gzip --fast -v $n2id.hdf" | `echo $whereto`
+      fi
+    fi
+#
+# pedestals for on file
+#
+    if grep -q -s $on $DBPATH/hrc$year.cpeds ; then
+      echo "found pedestals for $on" >&2
+    else
+      echo "calculating peds" >&2
+      echo "$MPICOMM $BINPATH/cpeds -g $DBPATH/ $cpeds_opt $on.hdf" | `echo $whereto`
+    fi
+  fi
+  if test $mode = 'pr' ; then
+    if test $paroff ; then
+#
+# reduce
+#
+      if test $reduceoff ; then
+	echo "reducing zebra to HDF" >&2
+	echo "$BINPATH/fz2hdf $fz2hdf_opt $off.fz" | `echo $whereto`
+	if test $delete ; then
+	  echo "/bin/rm -f $off.fz*" | `echo $whereto`
+        elif test -f $off.fz.gz || test -f $off.fz.Z || test -f $off.fz.bz2 ; then
+	  echo "/bin/rm -f $off.fz" | `echo $whereto`
+	else
+	  echo "compressing $off.fz" >&2
+	  echo "gzip --fast -v $off.fz" | `echo $whereto`
+	fi
+      fi
+#
+# pedestals for off file
+#
+      if grep -q -s $off $DBPATH/hrc$year.cpeds ; then
+	echo "found pedestals for $off" >&2
+      else
+	echo "calculating peds" >&2
+	echo "$MPICOMM $BINPATH/cpeds -g $DBPATH/ $cpeds_opt $off.hdf" | `echo $whereto`
+      fi
+    fi
+  fi
+  if test $ok ; then
+    unset nothingtodo
+#
+# parameterization
+#
+    if test $mode = 'pr' ; then
+      if test $paron ; then
+	if test $onra ; then
+	  echo "$MPICOMM $nproc_opt $BINPATH/cparam -r $onra.0 -d $ondec.0 -g $DBPATH/ -i $off -p -n $n2id $cparam_opt $on.hdf" | `echo $whereto`
+	else
+	  echo "$MPICOMM $nproc_opt $BINPATH/cparam -g $DBPATH/ -i $off -p -n $n2id $cparam_opt $on.hdf" | `echo $whereto`
+	fi
+      fi
+      if test $paroff ; then
+	if test $offra ; then
+	  echo "$MPICOMM $nproc_opt $BINPATH/cparam -r $offra.0 -d $offdec.0 -g $DBPATH/ -i $on -p -n $n2id $cparam_opt $off.hdf" | `echo $whereto`
+	else
+	  echo "$MPICOMM $nproc_opt $BINPATH/cparam -g $DBPATH/ -i $on -p -n $n2id $cparam_opt $off.hdf" | `echo $whereto`
+	fi
+      fi
+      echo "$on.mat $off.mat">> files
+      echo "$on.mat" >> files.trk
+      if test $paron ; then
+	if test -f $on.hdf.gz || test -f $on.hdf.Z ; then
+	  echo "/bin/rm -f $on.hdf" | `echo $whereto`
+        elif test $nocompress ; then
+           echo "leaving $on.hdf uncompressed" >&2
+	else
+	  echo "compressing $on.hdf" >&2
+	  echo "gzip --fast -v $on.hdf" | `echo $whereto`
+	fi
+      fi
+      if test $paroff ; then
+	if test -f $off.hdf.gz || test -f $off.hdf.Z ; then
+	  echo "/bin/rm -f $off.hdf" | `echo $whereto`
+        elif test $nocompress ; then
+          echo "leaving $off.hdf uncompressed" >&2
+	else
+	  echo "compressing $off.hdf" >&2
+	  echo "gzip --fast -v $off.hdf" | `echo $whereto`
+	fi
+      fi
+    else
+      if test $paron ; then
+	if test $onra ; then
+	  echo "$MPICOMM $nproc_opt $BINPATH/cparam -r $onra.0 -d $ondec.0 -g $DBPATH/ -n $n2id $cparam_opt $on.hdf" | `echo $whereto`
+	else
+	  echo "$MPICOMM $nproc_opt $BINPATH/cparam -g $DBPATH/ -n $n2id $cparam_opt $on.hdf" | `echo $whereto`
+	fi
+      fi
+      echo "$on.mat" >> files.trk
+      if test $paron ; then
+	if test -f $on.hdf.gz || test -f $on.hdf.Z ; then
+	  echo "/bin/rm -f $on.hdf" | `echo $whereto`
+        elif test $nocompress ; then
+          echo "leaving $on.hdf uncompressed" >&2
+	else
+	  echo "compressing $on.hdf" >&2
+	  echo "gzip --fast -v $on.hdf" | `echo $whereto`
+	fi
+      fi
+    fi
+#
+# super cuts
+#
+    if test $cuton ; then
+       if test $pulsar ; then
+         tmp=`$BINPATH/find_ephemeris $pulsar $date`
+         echo $MPICOMM $BINPATH/mcut $mcut_opt -p $tmp,1 $on"p.hdf" | `echo $whereto`
+       elif test $binary ; then
+         tmp1=`$BINPATH/find_orbit $binary $date`
+         tmp2=`$BINPATH/find_ephemeris $binary $date`
+         echo $MPICOMM $BINPATH/mcut $mcut_opt -o $tmp1 -p $tmp2,1 $on"p.hdf" | `echo $whereto`
+       else
+         echo $MPICOMM $BINPATH/mcut $mcut_opt $on"p.hdf" | `echo $whereto`
+       fi
+    fi
+    if test $mode = 'pr' && test $cutoff ; then
+       if test $pulsar ; then
+         tmp=`$BINPATH/find_ephemeris $pulsar $date`
+         echo $MPICOMM $BINPATH/mcut $mcut_opt -p $tmp,1 $off"p.hdf" | `echo $whereto`
+       elif test $binary ; then
+         tmp1=`$BINPATH/find_orbit $binary $date`
+         tmp2=`$BINPATH/find_ephemeris $binary $date`
+         echo $MPICOMM $BINPATH/mcut $mcut_opt -o $tmp1 -p $tmp2,1 $off"p.hdf" | `echo $whereto`
+       else
+         echo $MPICOMM $BINPATH/mcut $mcut_opt $off"p.hdf" | `echo $whereto`
+       fi
+    fi
+  fi
+done <$1
+if test $nothingtodo ; then
+  echo "no results" >&2
+fi

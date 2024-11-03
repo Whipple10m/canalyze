@@ -1,0 +1,125 @@
+#!/usr/bin/ksh
+# Auto data ftp script
+# RW Lessard 950227
+# Variable definitions
+SCRIPT_DIR=/home/observer/.data_scripts
+DATA_HOST=markarian.sao.arizona.edu
+TIME=2am
+FROMPATH=/data2/raw10
+TEMPPATH=/home/observer/purdue
+WHEREPATH=/data2/raw10
+FZ2HDF="/home/observer/purdue/src/whipple/vdev/fz2hdf -o 1.0"
+# Getoptions
+set -- `/usr/bin/getopt d:f:ht:w: $*`
+while [ $1 != -- ]
+do
+  case $1 in
+    -h) echo "Usage: request_data [options] dyymmdd"
+	echo "       [options]"
+	echo "       -d day (day of week to start transfer, e.g. Sat)"
+	echo "       -h (help)"
+	echo "       -f From path (get data From)"
+	echo "       -t time (time to start transfer - use at convention)"
+	echo "       -w to Where path (put data Where)"
+	echo "       DEFAULTS: -d tomorrow, -f /data/raw10, -t 2am -w /data2/raw10"
+	exit 1;;
+    -d) DAY=$2
+	shift;;
+    -f) FROMPATH=$2
+	shift;;
+    -t) TIME=$2
+	shift;;
+    -w) WHEREPATH=$2
+	shift;;
+  esac
+  shift
+done
+shift
+echo $WHEREPATH
+# check to see if command file already done
+if test -f $WHEREPATH/$1/$1.ftp ; then
+  echo "$WHEREPATH/$1/$1.ftp already exists"
+  cat $WHEREPATH/$1/$1.ftp
+  /usr/bin/echo "Do you want to just transfer these files (y/n) ? \c"
+  read answer
+  if test $answer = "y" ; then
+    if test $DAY ; then 
+      echo "ftp $DATA_HOST < $WHEREPATH/$1/$1.ftp" | at -s $TIME $DAY
+      echo "Files list will be transferred on $DAY at $TIME"
+    else
+      echo "ftp $DATA_HOST < $WHEREPATH/$1/$1.ftp" | at -s $TIME
+      echo "File list will be transferred at $TIME"
+    fi
+    exit 1
+  fi
+fi
+# build command file for given date
+echo "cd $FROMPATH/$1" > $SCRIPT_DIR/.mls_command
+echo "mls *.fz* $SCRIPT_DIR/$1.files" >> $SCRIPT_DIR/.mls_command
+echo "y" >> $SCRIPT_DIR/.mls_command
+echo "bye" >> $SCRIPT_DIR/.mls_command
+# get file list
+echo "connecting to $DATA_HOST ..."
+if ftp $DATA_HOST < $SCRIPT_DIR/.mls_command > /dev/null 2> /dev/null ; then
+  echo "OK ..."
+  echo "Looking in directory $FROMPATH/$1"
+  echo "The following files are available:"
+  cat $SCRIPT_DIR/$1.files
+  /usr/bin/echo "Do you want to get these files (y/n) ? \c"
+  read answer
+  if test $answer = "y" ; then
+    mkdir $WHEREPATH/$1 > /dev/null 2>/dev/null
+    echo "cd $TEMPPATH/$1" > $WHEREPATH/$1/$1.ftp
+    echo "lcd $WHEREPATH/$1" >> $WHEREPATH/$1/$1.ftp
+    echo "binary" >> $WHEREPATH/$1/$1.ftp
+    echo "prompt" >> $WHEREPATH/$1/$1.ftp
+    rsh $DATA_HOST mkdir $TEMPPATH/$1
+    for file in `cat $SCRIPT_DIR/$1.files` ; do
+      echo "copying $file from $FROMPATH/$1 to $TEMPPATH/$1/ ..."
+      rsh $DATA_HOST cp $FROMPATH/$1/$file $TEMPPATH/$1/
+      echo "done"
+      case $file in 
+	*.Z )
+	      echo "uncompressing $TEMPPATH/$1/$file ..."
+	      rsh $DATA_HOST uncompress -v $TEMPPATH/$1/$file
+	      echo "done"
+	      file=${file%.*} ;;
+	*.gz )
+	      echo "uncompressing $TEMPPATH/$1/$file ..."
+	      rsh $DATA_HOST /usr/local/bin/gunzip -v $TEMPPATH/$1/$file
+	      echo "done"
+	      file=${file%.*};;
+	*.fzg )
+	      echo "uncompressing $TEMPPATH/$1/$file ..."
+	      rsh $DATA_HOST /bin/mv $TEMPPATH/$1/$file $TEMPPATH/$1/${file%.*}.fz.gz
+	      file=${file%.*}.fz.gz
+	      rsh $DATA_HOST /usr/local/bin/gunzip -v $TEMPPATH/$1/$file
+	      echo "done"
+	      file=${file%.*};;
+      esac
+      echo "converting FZ to HDF ..."
+      rsh $DATA_HOST "cd $TEMPPATH/$1 ; setenv LD_LIBRARY_PATH /home/observer/purdue/src/matlab5/lib/alpha ; $FZ2HDF $file" | tee -a $WHEREPATH/$1/$1.fz2hdf.out
+      rsh $DATA_HOST rm -f $TEMPPATH/$1/$file
+      echo "compressing ${file%.*}.hdf"
+      rsh $DATA_HOST /usr/local/bin/gzip --fast $TEMPPATH/$1/${file%.*}.hdf
+      echo "get ${file%.*}.hdf.gz" >> $WHEREPATH/$1/$1.ftp
+      echo "get ${file%.*}d.mat" >> $WHEREPATH/$1/$1.ftp
+    done
+    rm -f $SCRIPT_DIR/$1.files
+    echo "bye" >> $WHEREPATH/$1/$1.ftp
+    echo "Creating FTP shell script -> $WHEREPATH/$1/$1.ftp"
+    echo "Edit it to make changes to file list"
+    if test $DAY ; then 
+      echo "ftp $DATA_HOST < $WHEREPATH/$1/$1.ftp" | at -s $TIME $DAY
+      echo "Files list will be transferred on $DAY at $TIME"
+    else
+      echo "ftp $DATA_HOST < $WHEREPATH/$1/$1.ftp" | at -s $TIME
+      echo "File list will be transferred at $TIME"
+    fi
+  else
+    rm -f $SCRIPT_DIR/$1.files
+    echo "File list will not be transferred."
+  fi   
+else
+  echo "Failed to get file list ..."
+fi
